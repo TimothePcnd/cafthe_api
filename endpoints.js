@@ -3,7 +3,7 @@ const db = require("./db");
 //const {response} = require("express");
 const bcrypt = require("bcrypt");
 const router = express.Router();
-
+const jwt = require("jsonwebtoken");
 
 /* Route : Lister les produits
  * GET /api/produits
@@ -60,7 +60,7 @@ router.get("/client/:id", (req, res) =>{
  * "nom": "DUPONT",
  * "prenom": "Jean",
  * "email": "jean.dupont@gmail.com",
- * "mot_de_passe": "montMotDePasse"
+ * "mot_de_passe": "monMotDePasse"
  * }
  */
 router.post("/client/register", (req, res) => {
@@ -168,7 +168,24 @@ router.put("/client/delete/:id", (req, res) => {
     });
 });
 
-
+/*
+ * Route : Modifier le mot de passe d'un client
+ * POST /api/client/login/:id
+ */
+/*router.post("/client/login/:id", (req, res) => {
+    const {id} = req.params;
+    const {oldMdp, newMdp} = req.body
+    db.query("SELECT * FROM client WHERE mdp_client = ?", [id], (err, result) => {
+        bcrypt.compare(oldMd)
+        if (err) {
+            console.log(err);
+            return res.status(500).json({message: "Erreur serveur"});
+        }
+        if (result.length === 0) {
+            return res.status(404).json({message: "Looser"});
+        }
+        res.json(result);
+});*/
 
 
 module.exports = router;
