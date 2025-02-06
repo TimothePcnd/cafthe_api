@@ -155,8 +155,11 @@ router.get("/commande/:id", (req, res) => {
 
 router.put("/client/delete/:id", (req, res) => {
     const {id} = req.params;
+    const date = new Date();
+    const date2 = date.toISOString();
+    const date3 = date2.split('T')[0];
 
-    db.query("UPDATE client SET nom_prenom_client = ?, Telephone_client = ?, Date_inscription_client = ?, Mail_client = ?, mdp_client = ?, adresse_client = ? WHERE id_client = ?", ["","","2000-01-01","","","", id], (err, result) => {
+    db.query("UPDATE client SET nom_prenom_client = ?, Telephone_client = ?, Date_inscription_client = ?, Mail_client = ?, mdp_client = ?, adresse_client = ? WHERE id_client = ?", ["","",date3,"","","", id], (err, result) => {
         if (err) {
             console.log(err)
             return res.status(500).json({message: "Erreur lors de la modification"});
