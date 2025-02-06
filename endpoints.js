@@ -34,6 +34,24 @@ router.get("/produit/:id", (req, res) =>{
     });
 });
 
+/* Route : Récupérer un client par son ID
+ * GET /api/client
+ */
+
+router.get("/client/:id", (req, res) =>{
+    const {id} = req.params;
+    db.query("SELECT * FROM client WHERE id_client = ?", [id], (err, result)=> {
+        if (err) {
+            return res.status(500).json({message: "Erreur du serveur"});
+        }
+        if (result.length === 0) {
+            return res.status(404).json({message: "Client non trouvé"});
+        }
+        res.json(result);
+    });
+});
+
+
 /*
  * Route : Inscription d'un client
  * POST /api/client/register
@@ -74,6 +92,80 @@ router.post("/client/register", (req, res) => {
         );
     });
 });
+
+/*
+ * Route : Modification d'une fiche client
+ * POST /api/client/
+ */
+
+router.put("/client/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const {telephone, mail, adresse} = req.body;
+
+    db.query("UPDATE client SET Telephone_client = ?, Mail_client = ?, adresse_client = ? WHERE id_client = ?", [telephone, mail, adresse, id], (err, result) => {
+        if (err) {
+            return res.status(500).json({message: "Erreur lors de la modification"});
+        }
+        res.status(201).json({message: "Modification réussie"});
+    });
+});
+
+/*
+ * Route : Lister les commandes d'un client
+ * POST /api/commande/client/:id
+ */
+router.get("/commande/client/:id", (req, res) => {
+    const {id} = req.params;
+
+    db.query("SELECT id_commande, Date_prise_commande, montant_ttc FROM commande WHERE id_client = ?", [id], (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({message: "Erreur serveur"});
+        }
+        if (result.length === 0) {
+            return res.status(404).json({message: "Le client n'a passé de commande"});
+        }
+        res.json(result);
+    });
+});
+
+/*
+ * Route : Détails d'une commande d'un client
+ * POST /api/commande/:id
+ */
+router.get("/commande/:id", (req, res) => {
+    const {id} = req.params;
+
+    db.query("SELECT * FROM commande WHERE id_commande = ?", [id], (err, result) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({message: "Erreur serveur"});
+        }
+        if (result.length === 0) {
+            return res.status(404).json({message: "Commande du client non trouvée"});
+        }
+        res.json(result);
+    });
+});
+
+/*
+ * Route : Supprimer un client
+ * POST /api/client/:id
+ */
+
+router.put("/client/delete/:id", (req, res) => {
+    const {id} = req.params;
+
+    db.query("UPDATE client SET nom_prenom_client = ?, Telephone_client = ?, Date_inscription_client = ?, Mail_client = ?, mdp_client = ?, adresse_client = ? WHERE id_client = ?", ["","","2000-01-01","","","", id], (err, result) => {
+        if (err) {
+            console.log(err)
+            return res.status(500).json({message: "Erreur lors de la modification"});
+        }
+        res.status(201).json({message: "Modification réussie", id_client: id});
+    });
+});
+
+
 
 
 module.exports = router;
