@@ -2,13 +2,69 @@ const express = require("express");
 const db = require("./db");
 //const {response} = require("express");
 const bcrypt = require("bcrypt");
-const router = express.Router();
 const jwt = require("jsonwebtoken");
+const {sign} = require("jsonwebtoken")
+require("dotenv").config(); //Permet de charger les variables d'environnement
+const {verifyToken} = require ("./middleware")
+const router = express.Router();
+
+
+/*
+ * Afficher tous les cafés
+ * GET /api/produit/café
+ */
+router.get("/produits/cafes", (req, res) => {
+    db.query("SELECT * FROM produit WHERE id_categorie = ?", [2], (err, result) => {
+        if (err) {
+            return res.status(500).json({message: "Erreur du serveur"});
+        }
+        if (result.length === 0) {
+            return res.status(404).json({message: "Catégorie non trouvé"});
+        }
+        res.json(result); // Retournera uniquement le premier résultat
+    });
+});
+
+
+/*
+ * Afficher tous les thés
+ * GET /api/produit/thé
+ */
+router.get("/produits/thes", (req, res) => {
+    db.query("SELECT * FROM produit WHERE id_categorie = ?", [1], (err, result) => {
+        if (err) {
+            return res.status(500).json({message: "Erreur du serveur"});
+        }
+        if (result.length === 0) {
+            return res.status(404).json({message: "Catégorie non trouvé"});
+        }
+        res.json(result); // Retournera uniquement le premier résultat
+    });
+});
+
+
+/*
+ * Afficher tous les accessoires
+ * GET /api/produit/accessoire
+ */
+router.get("/produits/accessoires", (req, res) => {
+    db.query("SELECT * FROM produit WHERE id_categorie = ?", [3], (err, result) => {
+        if (err) {
+            return res.status(500).json({message: "Erreur du serveur"});
+        }
+        if (result.length === 0) {
+            return res.status(404).json({message: "Catégorie non trouvé"});
+        }
+        res.json(result); // Retournera uniquement le premier résultat
+    });
+});
+
+console.log(jwt)
 
 /* Route : Lister les produits
  * GET /api/produits
  */
-router.get("/produit", (req, res) =>{
+router.get("/produit", verifyToken, (req, res) =>{
     db.query("SELECT * FROM produit", (err, result) => {
         if (err) {
             return res.status(500).json({message: "Erreur du serveur"});
@@ -60,7 +116,7 @@ router.get("/client/:id", (req, res) =>{
  * "nom": "DUPONT",
  * "prenom": "Jean",
  * "email": "jean.dupont@gmail.com",
- * "mot_de_passe": "monMotDePasse"
+ * "mot_de_passe" : "monMotDePasse"
  * }
  */
 router.post("/client/register", (req, res) => {
@@ -176,7 +232,7 @@ router.put("/client/delete/:id", (req, res) => {
     const {id} = req.params;
     const {oldMdp, newMdp} = req.body
     db.query("SELECT * FROM client WHERE mdp_client = ?", [id], (err, result) => {
-        bcrypt.compare(oldMd)
+        bcrypt.compare(oldMdp)
         if (err) {
             console.log(err);
             return res.status(500).json({message: "Erreur serveur"});
@@ -186,6 +242,51 @@ router.put("/client/delete/:id", (req, res) => {
         }
         res.json(result);
 });*/
+
+/*
+ * ROUTE: Connexion d'un client
+ * {
+ * "email":jean.dupont@gmail.com
+ * "mot_de_passe": "hashpassword1"
+ * }
+ */
+
+router.post("/login", (req, res) => {
+    const {Mail_client, mdp_client} = req.body;
+
+    db.query("SELECT * FROM client WHERE Mail_client = ?", [Mail_client],(err, result) => {
+        if (err) {
+            return res.status(500).json({message: "Erreur lors de la modification"});
+        }
+        if (result.length === 0) {
+            return res.status(401).json({message: "Identifiant incorrect"});
+        }
+
+        const client = result[0];
+        /*Vérification du mot de passe*/
+        bcrypt.compare(mdp_client, client.mdp_client, (err, isMatch) => {
+            if (err) {
+                return res.status(500).json({message: "Erreur serveur"});
+            }
+            if (!isMatch) {
+                return res.status(401).json({message:"Mot de passe incorrect"})
+            }
+            // on va générer le token
+            // Génération d'un token JWT
+            const token = sign(
+                {id: client.id_client, email: client.Mail_client}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_EXPIRES_IN}
+
+            );
+            res.json({message:"Connexion réussie", token,
+                client:{
+                    id: client.id_client,
+                    nom: client.nom_prenom_client,
+                    email: client.Mail_client,
+                },
+            });
+        });
+    });
+});
 
 
 module.exports = router;
