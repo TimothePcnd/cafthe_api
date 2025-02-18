@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const {sign} = require("jsonwebtoken")
 require("dotenv").config(); //Permet de charger les variables d'environnement
 const {verifyToken} = require ("./middleware")
+const {query} = require("express");
 const router = express.Router();
 
 
@@ -103,7 +104,7 @@ router.get("/client/:id", (req, res) =>{
         if (result.length === 0) {
             return res.status(404).json({message: "Client non trouvé"});
         }
-        res.json(result);
+        res.json(result[0]);
     });
 });
 
@@ -156,10 +157,11 @@ router.post("/client/register", (req, res) => {
 
 router.put("/client/:id", (req, res) => {
     const id = parseInt(req.params.id);
-    const {telephone, mail, adresse} = req.body;
+    const {Telephone_client, Mail_client, adresse_client} = req.body;
 
-    db.query("UPDATE client SET Telephone_client = ?, Mail_client = ?, adresse_client = ? WHERE id_client = ?", [telephone, mail, adresse, id], (err, result) => {
+    db.query("UPDATE client SET Telephone_client = ?, Mail_client = ?, adresse_client = ? WHERE id_client = ?", [Telephone_client, Mail_client, adresse_client, id], (err, result) => {
         if (err) {
+            console.log(err);
             return res.status(500).json({message: "Erreur lors de la modification"});
         }
         res.status(201).json({message: "Modification réussie"});
@@ -226,28 +228,59 @@ router.put("/client/delete/:id", (req, res) => {
 
 /*
  * Route : Modifier le mot de passe d'un client
- * POST /api/client/login/:id
+ * POST /api/update/login/:id
  */
-/*router.post("/client/login/:id", (req, res) => {
-    const {id} = req.params;
-    const {oldMdp, newMdp} = req.body
-    db.query("SELECT * FROM client WHERE mdp_client = ?", [id], (err, result) => {
-        bcrypt.compare(oldMdp)
+
+router.put("/update/login/:id", (req, res) => {
+    const { id } = req.params;
+    const { oldMdp, newMdp } = req.body;
+
+    db.query("SELECT mdp_client FROM client WHERE id_client = ?", [id], (err, result) => {
         if (err) {
             console.log(err);
             return res.status(500).json({message: "Erreur serveur"});
         }
         if (result.length === 0) {
-            return res.status(404).json({message: "Looser"});
+            return res.status(404).json({message: "Utilisateur non trouvé"});
         }
-        res.json(result);
-});*/
+
+        const hashedPassword = result[0].mdp_client;
+
+        bcrypt.compare(oldMdp, hashedPassword, (error, isMatch) => {
+            if (error) {
+                console.log(error);
+                return res.status(500).json({message: "Erreur lors de la vérification du mot de passe"});
+            }
+
+            if (!isMatch) {
+                return res.status(400).json({message: "Ancien mot de passe incorrect"});
+            }
+
+            bcrypt.hash(newMdp, 10, (err, hash) => {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).json({message: "Erreur lors du hachage du mot de passe"});
+                }
+
+                db.query("UPDATE client SET mdp_client = ? WHERE id_client = ?", [hash, id], (error, updateResult) => {
+                    if (error) {
+                        console.log(error);
+                        return res.status(500).json({message: "Erreur lors de la mise à jour du mot de passe"});
+                    }
+                    return res.status(200).json({message: "Mot de passe modifié avec succès"});
+                });
+            });
+        });
+    });
+});
+
 
 /*
  * ROUTE: Connexion d'un client
  * {
- * "email":jean.dupont@gmail.com
- * "mot_de_passe": "hashpassword1"
+ * "email":emma.lefevre@mail.com
+ * " ancien mot_de_passe": "password5"
+ * " nv mot_de_passe": "12345"
  * }
  */
 
