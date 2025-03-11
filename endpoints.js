@@ -9,6 +9,10 @@ const {verifyToken} = require ("./middleware")
 const {query} = require("express");
 const router = express.Router();
 
+/* npm install jsonwebtoken
+*   npm install --save dev jest
+*/
+
 
 /*
  * Afficher tous les cafés
@@ -60,12 +64,11 @@ router.get("/produits/accessoires", (req, res) => {
     });
 });
 
-console.log(jwt)
 
 /* Route : Lister les produits
  * GET /api/produits
  */
-router.get("/produit", verifyToken, (req, res) =>{
+router.get("/produit", (req, res) =>{
     db.query("SELECT * FROM produit", (err, result) => {
         if (err) {
             return res.status(500).json({message: "Erreur du serveur"});
@@ -120,7 +123,7 @@ router.get("/client/:id", (req, res) =>{
  * "mot_de_passe" : "monMotDePasse"
  * }
  */
-router.post("/client/register", (req, res) => {
+router.post("/register", (req, res) => {
     const{ nom_prenom_client, Telephone_client, Date_inscription_client, Mail_client, mdp_client, adresse_client } = req.body
     // Contrôler si le mail est déja présent dans la base de donnée
     db.query("SELECT * FROM client WHERE Mail_client= ?", [Mail_client], (err, result) => {
@@ -175,7 +178,7 @@ router.put("/client/:id", (req, res) => {
 router.get("/commande/client/:id", (req, res) => {
     const {id} = req.params;
 
-    db.query("SELECT id_commande, Date_prise_commande, montant_ttc FROM commande WHERE id_client = ?", [id], (err, result) => {
+    db.query("SELECT * FROM commande WHERE id_client = ?", [id], (err, result) => {
         if (err) {
             console.log(err);
             return res.status(500).json({message: "Erreur serveur"});
@@ -194,7 +197,10 @@ router.get("/commande/client/:id", (req, res) => {
 router.get("/commande/:id", (req, res) => {
     const {id} = req.params;
 
-    db.query("SELECT * FROM commande WHERE id_commande = ?", [id], (err, result) => {
+    db.query("SELECT * FROM commande" +
+        " JOIN panier ON commande.id_commande = panier.id_commande" +
+        " JOIN produit ON panier.id_produit = produit.id_produit" +
+        " WHERE commande.id_commande = ?", [id], (err, result) => {
         if (err) {
             console.log(err);
             return res.status(500).json({message: "Erreur serveur"});
@@ -202,6 +208,7 @@ router.get("/commande/:id", (req, res) => {
         if (result.length === 0) {
             return res.status(404).json({message: "Commande du client non trouvée"});
         }
+
         res.json(result);
     });
 });
@@ -229,6 +236,8 @@ router.put("/client/delete/:id", (req, res) => {
 /*
  * Route : Modifier le mot de passe d'un client
  * POST /api/update/login/:id
+ * ancien mdp : monMotDePasse
+ * nv mdp : 123456
  */
 
 router.put("/update/login/:id", (req, res) => {
@@ -276,7 +285,7 @@ router.put("/update/login/:id", (req, res) => {
 
 
 /*
- * ROUTE: Connexion d'un client
+ * ROUTE : Connexion d'un client
  * {
  * "email":emma.lefevre@mail.com
  * " ancien mot_de_passe": "password5"
