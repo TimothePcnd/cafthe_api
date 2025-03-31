@@ -141,7 +141,8 @@ router.post("/register", (req, res) => {
         }
 
         // Insertion du nouveau client
-        db.query("INSERT INTO client (nom_prenom_client, Telephone_client, Date_inscription_client, Mail_client, mdp_client, adresse_client) VALUES (?,?,?,?,?,?)", [nom_prenom_client, Telephone_client, Date_inscription_client, Mail_client, hash, adresse_client],
+        db.query("INSERT INTO client (nom_prenom_client, Telephone_client, Date_inscription_client, Mail_client, mdp_client, adresse_client)VALUES (?,?,?,?,?,?)",
+            [nom_prenom_client, Telephone_client, Date_inscription_client, Mail_client, hash, adresse_client],
             (err , result) => {
                 if (err) {
                     return res.status(500).json({message: "Erreur lors de l'inscription" });
@@ -162,7 +163,9 @@ router.put("/client/:id", (req, res) => {
     const id = parseInt(req.params.id);
     const {Telephone_client, Mail_client, adresse_client} = req.body;
 
-    db.query("UPDATE client SET Telephone_client = ?, Mail_client = ?, adresse_client = ? WHERE id_client = ?", [Telephone_client, Mail_client, adresse_client, id], (err, result) => {
+    db.query("UPDATE client SET Telephone_client = ?, Mail_client = ?, adresse_client = ? WHERE id_client = ?",
+        [Telephone_client, Mail_client, adresse_client, id],
+        (err, result) => {
         if (err) {
             console.log(err);
             return res.status(500).json({message: "Erreur lors de la modification"});
@@ -330,5 +333,74 @@ router.post("/login", (req, res) => {
     });
 });
 
+/* Route pour récupérer toutes les lignes panier d'une commande */
+// Infos : id_commande
+/*router.get("/ligne/commande/:id_commande", (req, res) => {
+    const { id_commande } = req.params;
+
+    db.query(
+        "SELECT * FROM panier WHERE id_commande = ?",
+        [id_commande],
+        (error, result) => {
+            if (error) {
+                return res
+                    .status(500)
+                    .json({
+                        message: "Erreur lors de la récupération des lignes de panier",
+                    });
+            }
+            res.json(result);
+        },
+    );
+});*/
+
+/* Route pour ajouter une ligne dans le panier*/
+
+/*router.post("/ligne/ajouter", verifyToken, (req, res) => {
+    const { id_commande, id_produit } = req.body;
+
+    db.query(
+        `SELECT * FROM panier WHERE id_commande = ? AND id_produit = ?`,
+        [id_commande, id_produit],
+        (error, result) => {
+            if (error) {
+                return res.status(500).json({
+                    message: "Erreur lors de la récupération de la ligne de panier",
+                });
+            }
+            if (result.length === 0) {
+                db.query(
+                    `INSERT INTO panier (quantite_produit_ligne_panier, id_commande, id_produit) VALUES (1, ?, ?)`,
+                    [id_commande, id_produit],
+                    (error, result) => {
+                        if (error) {
+                            return res.status(500).json({
+                                message:
+                                    "Erreur lors de la création d'une nouvelle ligne de panier",
+                            });
+                        }
+                        res.status(201).json({
+                            message: "Ajout réussi",
+                            ID_ligne_panier: result.insertId,
+                        });
+                    },
+                );
+            } else {
+                db.query(
+                    "UPDATE panier SET quantite_produit_ligne_panier = quantite_produit_ligne_panier + 1 WHERE id_commande = ? AND id_produit = ?",
+                    [id_commande, id_produit],
+                    (error, result) => {
+                        if (error) {
+                            return res.status(500).json({
+                                message:
+                                    "Erreur lors de la création d'une nouvelle ligne de panier",
+                            });
+                        }
+                    },
+                );
+            }
+        },
+    );
+});*/
 
 module.exports = router;
