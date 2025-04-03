@@ -117,11 +117,13 @@ router.get("/client/:id", (req, res) =>{
  * POST /api/client/register
  * Exemple JSON
  * {
- * "nom": "DUPONT",
- * "prenom": "Jean",
- * "email": "jean.dupont@gmail.com",
- * "mot_de_passe" : "monMotDePasse"
- * }
+* "nom_prenom_client" : "Dupont",
+*"Date_inscription_client" : "2025-02-13",
+* "Mail_client" : "jean.dupont@email.com",
+* "Telephone_client" : "0793625147",
+* "adresse_client" : "13 Rue Des Roses, Nice, 06004",
+* "mdp_client" : "monMotDePasse"
+}
  */
 router.post("/register", (req, res) => {
     const{ nom_prenom_client, Telephone_client, Date_inscription_client, Mail_client, mdp_client, adresse_client } = req.body
@@ -153,6 +155,7 @@ router.post("/register", (req, res) => {
         );
     });
 });
+
 
 /*
  * Route : Modification d'une fiche client
