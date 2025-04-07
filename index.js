@@ -5,7 +5,12 @@ const routes = require("./endpoints"); // Routes de l'API
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: 'cafthe.timothe.pecnard.dev-campus.fr',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 
 // Utilisation des routes
 app.use("/api", routes);
@@ -16,4 +21,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`L'API est démarré sur http://locahost:${PORT}`);
 });
-
