@@ -6,7 +6,7 @@ const routes = require("./endpoints"); // Routes de l'API
 const app = express();
 app.use(express.json());
 app.use(cors({
-    origin: 'https://cafthe.timothe.pecnard.dev-campus.fr',
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
